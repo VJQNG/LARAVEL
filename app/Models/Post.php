@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
+    protected $fillable = ['title', 'content', 'category_id', 'published_at'];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -24,5 +26,10 @@ class Post extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class); // [cite: 287]
     }
 }
