@@ -6,8 +6,9 @@ const routes = [
   { path: '/', component: () => import('../views/HomeView.vue') },
   { path: '/catalogo', component: () => import('../views/CatalogoView.vue') },
   { path: '/catalogo/:id', component: () => import('../views/ProductoDetalle.vue'), props: true },
-  { path: '/login', name: 'login', component: () => import('../components/LoginView.vue') }, // Reutilizamos tu Login
-  
+  { path: '/login', name: 'login', component: () => import('../components/LoginView.vue') },
+  { path: '/carrito', component: () => import('../views/CartView.vue') },
+
   // Rutas Privadas Anidadas (Admin)
   {
     path: '/admin',
