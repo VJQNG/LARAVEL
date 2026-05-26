@@ -28,6 +28,20 @@ export const useAuthStore = defineStore('auth', {
       this.user = res.data.user
       localStorage.setItem('token', this.token)
     },
+
+    async fetchUser() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/me', {
+          headers: { Authorization: `Bearer ${this.token}` }
+        })
+        this.user = res.data
+      } catch (error) {
+        // Si el token es inválido o expiró, limpiamos todo
+        this.token = null
+        this.user = null
+        localStorage.removeItem('token')
+      }
+    },
     
     async logout() {
       try {

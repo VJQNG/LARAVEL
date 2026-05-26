@@ -1,17 +1,22 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const form = ref({ email: '', password: '' })
 const error = ref('')
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const manejarLogin = async () => {
   try {
     await auth.login(form.value)
-    router.push('/dashboard') // Si la llave es válida, lo dejamos pasar
+    
+    // Verificamos si había una redirección pendiente, si no, vamos a /admin
+    const redirectPath = route.query.redirect || '/admin'
+    router.push(redirectPath)
+    
   } catch (e) {
     error.value = 'Credenciales incorrectas. El servidor rechazó el acceso.'
   }

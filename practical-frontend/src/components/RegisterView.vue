@@ -15,7 +15,7 @@ const manejarRegistro = async () => {
   }
   try {
     await auth.register(form.value)
-    router.push('/dashboard')
+    router.push('/admin')
   } catch (e) {
     // Si Laravel nos responde con un rechazo 422 de validación
     if (e.response && e.response.status === 422) {

@@ -1,35 +1,50 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
-// Importaremos estos componentes en el próximo paso
-import LoginView from '../components/LoginView.vue'
-import RegisterView from '../components/RegisterView.vue'
-import DashboardView from '../components/DashboardView.vue'
+const routes = [
+  // Rutas Públicas
+  { path: '/', component: () => import('../views/HomeView.vue') },
+  { path: '/catalogo', component: () => import('../views/CatalogoView.vue') },
+  { path: '/catalogo/:id', component: () => import('../views/ProductoDetalle.vue'), props: true },
+  { path: '/login', name: 'login', component: () => import('../components/LoginView.vue') }, // Reutilizamos tu Login
+  
+  // Rutas Privadas Anidadas (Admin)
+  {
+    path: '/admin',
+    component: () => import('../layouts/AdminLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { path: '', component: () => import('../views/admin/Dashboard.vue') },
+      { path: 'productos', component: () => import('../views/admin/Productos.vue') },
+      { path: 'nuevo', component: () => import('../views/admin/NuevoProducto.vue') }
+    ]
+  },
+
+  // Ruta Catch-All (Error 404)
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound.vue') }
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    { path: '/', redirect: '/dashboard' },
-    { path: '/login', name: 'login', component: LoginView },
-    { path: '/register', name: 'register', component: RegisterView },
-    { 
-      path: '/dashboard', 
-      name: 'dashboard', 
-      component: DashboardView,
-      meta: { requiresAuth: true } // Esta etiqueta marca la ruta como "Zona Restringida"
-    }
-  ]
+  routes
 })
 
-// El "Guard" moderno (Vue Router v4)
-router.beforeEach((to) => {
+// Guard Global de Navegación (El PAM de Vue)
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
-
-  // Si la ruta es privada y no hay llave, retorna hacia el login
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return { name: 'login' }
+  
+  // Inicializar usuario si hay token guardado (Paso 4.7)
+  if (auth.token && !auth.user) {
+    // Ejecutaremos la función fetchUser que crearemos después en Pinia
+    if(typeof auth.fetchUser === 'function') {
+      await auth.fetchUser()
+    }
   }
-  // Si no entra al if, la navegación continúa automáticamente
+
+  // Si la ruta es privada y no tiene llave, lo mandamos al login guardando a dónde iba (Paso 4.7)
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
 })
 
 export default router
