@@ -24,15 +24,24 @@ const finalizarCompra = () => {
       <table class="tabla-carrito">
         <thead>
           <tr>
+            <th>Imagen</th>
             <th>Producto</th>
             <th>Precio</th>
             <th>Cantidad</th>
             <th>Subtotal</th>
-            <th>Acciones</th>
+            <th>Accion</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in carrito.items" :key="item.id">
+            <td class="celda-centrada">
+            <img
+              :src="item.imagen_url || 'https://placehold.co/50x50/2a2a2a/ffffff?text=X'"
+              :alt="item.nombre"
+              class="miniatura-carrito"
+              @error="e => e.target.src = 'https://placehold.co/50x50/2a2a2a/ffffff?text=Error'"
+            />
+            </td>
             <td>{{ item.nombre }}</td>
             <td>${{ item.precio }}</td>
             <td class="controles-cantidad">
@@ -73,4 +82,18 @@ const finalizarCompra = () => {
 .botones-accion { display: flex; gap: 15px; }
 .btn-vaciar { background: #555; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
 .btn-finalizar { background: #0f0; color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+.miniatura-carrito {
+  width: 45px;
+  height: 45px;
+  object-fit: cover; /* Mantiene la proporción cuadrada perfecta */
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  display: block;
+  margin: 0 auto; /* Centra la imagen dentro de su columna */
+}
+.celda-centrada {
+  text-align: center;
+  vertical-align: middle;
+}
 </style>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use App\Http\Resources\ProductoResource;
 
 class ProductoController extends Controller
 {
@@ -12,7 +13,7 @@ class ProductoController extends Controller
      */
     public function index()
     {
-        return response()->json(Producto::all(), 200);
+        return ProductoResource::collection(Producto::all());
     }
 
     /**
@@ -24,10 +25,19 @@ class ProductoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
-            'stock' => 'integer'
+            'stock' => 'integer',
+            'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
         ]);
 
-        $producto = Producto::create($request->all());
+        $data = $request->except('imagen');
+
+        // Si el usuario adjuntó una imagen...
+        if ($request->hasFile('imagen')) {
+            // La guarda en disco y guarda la ruta (ej. 'productos/mifoto.jpg') en $data
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
+
+        $producto = Producto::create($data);
         
         return response()->json($producto, 201);
     }
@@ -49,10 +59,17 @@ class ProductoController extends Controller
             'nombre' => 'string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'numeric',
-            'stock' => 'integer'
+            'stock' => 'integer',
+            'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
         ]);
 
-        $producto->update($request->all());
+        $data = $request->except('imagen');
+
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
+
+        $producto->update($data);
 
         return response()->json($producto, 200);
     }
