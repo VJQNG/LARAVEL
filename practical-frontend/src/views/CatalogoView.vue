@@ -3,23 +3,59 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { getProductos } from '../services/productoService'
 import { useCarritoStore } from '../stores/carrito'
 import CartIcon from '../components/CartIcon.vue'
+import axios from 'axios' // <-- IMPORTANTE: Necesitamos axios para llamar a la nueva API
 
 const productos = ref([])
 const busqueda = ref('')
 const carrito = useCarritoStore()
 
-// NUEVO: Variables para la paginación (Requisito 4)
+// NUEVO: Variables para las Categorías (Práctica 06)
+const categorias = ref([])
+const categoriaActiva = ref(null)
+
+// Variables para la paginación
 const paginaActual = ref(1)
-const itemsPorPagina = 10 
+const itemsPorPagina = 10
 
 onMounted(async () => {
   try {
+    // 1. Descargamos las categorías para crear los botones
+    const resCategorias = await axios.get('http://localhost:8000/api/categorias')
+    categorias.value = resCategorias.data.data
+
+    // 2. Descargamos todos los productos por defecto
     const res = await getProductos()
-    productos.value = res.data.data // Mantenemos el doble .data por tu Resource
+    productos.value = res.data.data
   } catch (error) {
-    console.error("Error al cargar el catálogo", error)
+    console.error("Error al cargar datos", error)
   }
 })
+
+// NUEVO: Función que se ejecuta al darle clic a una categoría
+const filtrarPorCategoria = async (cat) => {
+  try {
+    categoriaActiva.value = cat
+    // Llamamos a la ruta anidada que programaste en Laravel
+    const { data } = await axios.get(`http://localhost:8000/api/categorias/${cat.id}/productos`)
+    productos.value = data.data
+    paginaActual.value = 1 // Reseteamos a la página 1
+    busqueda.value = ''    // Limpiamos el buscador
+  } catch (error) {
+    console.error("Error al filtrar", error)
+  }
+}
+
+// NUEVO: Función para quitar el filtro y volver a ver todos
+const verTodos = async () => {
+  try {
+    categoriaActiva.value = null
+    const res = await getProductos()
+    productos.value = res.data.data
+    paginaActual.value = 1
+  } catch (error) {
+    console.error("Error al cargar todos", error)
+  }
+}
 
 // 1. Primero aplicamos el filtro de búsqueda
 const productosFiltrados = computed(() =>
@@ -29,7 +65,7 @@ const productosFiltrados = computed(() =>
 )
 
 // 2. Calculamos cuántas páginas totales hay
-const totalPaginas = computed(() => 
+const totalPaginas = computed(() =>
   Math.ceil(productosFiltrados.value.length / itemsPorPagina) || 1
 )
 
@@ -40,7 +76,6 @@ const productosPaginados = computed(() => {
   return productosFiltrados.value.slice(inicio, fin)
 })
 
-// Si el usuario escribe algo en el buscador, lo regresamos a la página 1 automáticamente
 watch(busqueda, () => {
   paginaActual.value = 1
 })
@@ -58,6 +93,24 @@ const cambiarPagina = (delta) => {
     <div class="cabecera-catalogo">
       <h2>Catálogo de Productos</h2>
       <CartIcon />
+    </div>
+
+    <div class="tabs-categorias">
+      <button
+        :class="{ activo: categoriaActiva === null }"
+        @click="verTodos"
+      >
+        Todos
+      </button>
+
+      <button
+        v-for="cat in categorias"
+        :key="cat.id"
+        :class="{ activo: categoriaActiva?.id === cat.id }"
+        @click="filtrarPorCategoria(cat)"
+      >
+        {{ cat.nombre }}
+      </button>
     </div>
     
     <input 
@@ -163,6 +216,37 @@ const cambiarPagina = (delta) => {
   margin: 0 auto;
   padding: 90px;
   box-sizing: border-box;
+}
+
+/* Estilos para las Categorías */
+.tabs-categorias {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  justify-content: center;
+  flex-wrap: wrap; /* Por si en móviles no caben en una sola línea */
+}
+
+.tabs-categorias button {
+  background: #1e1e1e;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: bold;
+}
+
+.tabs-categorias button:hover {
+  background: #333;
+  color: #fff;
+}
+
+.tabs-categorias button.activo {
+  background: #38bdf8; /* Tu color azul característico */
+  color: #000;
+  border-color: #38bdf8;
 }
 
 </style>

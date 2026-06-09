@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoriaController;
 
 
 // Rutas Públicas (No requieren Token)
@@ -12,6 +13,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/login', function () {
     return response()->json(['message' => 'No estas autenticado. Acceso denegado.'], 401);
 })->name('login');
+
+Route::apiResource('categorias', CategoriaController::class);
+Route::get('categorias/{categoria}/productos', [CategoriaController::class, 'productos']);
+Route::post('/categorias', [CategoriaController::class, 'store']);
 
 // Rutas Protegidas (Requieren Token Bearer en el Header)
 Route::middleware('auth:sanctum')->group(function () {

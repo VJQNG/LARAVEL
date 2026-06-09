@@ -27,6 +27,7 @@ class ProductoController extends Controller
             'precio' => 'required|numeric',
             'stock' => 'integer',
             'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
+            'categoria_id' => 'required|exists:categorias,id'
         ]);
 
         $data = $request->except('imagen');
@@ -61,6 +62,7 @@ class ProductoController extends Controller
             'precio' => 'numeric',
             'stock' => 'integer',
             'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
+            'categoria_id' => 'required|exists:categorias,id'
         ]);
 
         $data = $request->except('imagen');

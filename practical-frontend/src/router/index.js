@@ -7,6 +7,7 @@ const routes = [
   { path: '/catalogo', component: () => import('../views/CatalogoView.vue') },
   { path: '/catalogo/:id', component: () => import('../views/ProductoDetalle.vue'), props: true },
   { path: '/login', name: 'login', component: () => import('../components/LoginView.vue') },
+  { path: '/registro', name: 'registro', component: () => import('../components/RegisterView.vue') },
   { path: '/carrito', component: () => import('../views/CartView.vue') },
 
   // Rutas Privadas Anidadas (Admin)
@@ -17,7 +18,8 @@ const routes = [
     children: [
       { path: '', component: () => import('../views/admin/Dashboard.vue') },
       { path: 'productos', component: () => import('../views/admin/Productos.vue') },
-      { path: 'nuevo', component: () => import('../views/admin/NuevoProducto.vue') }
+      { path: 'nuevo', component: () => import('../views/admin/NuevoProducto.vue') },
+      { path: 'categorias', component: () => import('../views/admin/Categorias.vue') },
     ]
   },
 

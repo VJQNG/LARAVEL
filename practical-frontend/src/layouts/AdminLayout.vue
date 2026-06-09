@@ -21,6 +21,7 @@ const logout = async () => {
         <router-link to="/admin" exact-active-class="activo">Dashboard</router-link>
         <router-link to="/admin/productos" active-class="activo">Inventario</router-link>
         <router-link to="/admin/nuevo" active-class="activo">Nuevo Producto</router-link>
+        <router-link to="/admin/categorias" class="btn-menu">Categorías</router-link>
       </nav>
 
       <button @click="logout" class="btn-logout">Cerrar Sesión</button>

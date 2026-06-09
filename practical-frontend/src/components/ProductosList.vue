@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getProductos, updateProducto, deleteProducto } from '../services/productoService';
+import axios from 'axios';
 
 const productos = ref([]);
 const editando = ref(null);
 const formEdit = ref({ nombre: '', descripcion: '', precio: 0, stock: 0 });
 const imagenEdit = ref(null);
+const categorias = ref([]);
 
 // Requisitos 2 y 3: Estados para la interfaz
 const mensaje = ref('');
@@ -21,7 +23,19 @@ const cargarProductos = async () => {
     }
 };
 
-onMounted(cargarProductos);
+const cargarCategorias = async () => {
+    try {
+        const res = await axios.get('http://localhost:8000/api/categorias');
+        categorias.value = res.data.data || res.data;
+    } catch (error) {
+        console.error("Error cargando categorías", error);
+    }
+};
+
+onMounted(async () => {
+    await cargarProductos();
+    await cargarCategorias();
+});
 
 const mostrarMensaje = (texto, tipo = 'exito') => {
     mensaje.value = texto;
@@ -62,6 +76,7 @@ const guardarEdicion = async (id) => {
         fd.append('nombre', formEdit.value.nombre);
         fd.append('precio', formEdit.value.precio);
         fd.append('stock', formEdit.value.stock);
+        fd.append('categoria_id', formEdit.value.categoria_id);
         
         if (formEdit.value.descripcion) {
             fd.append('descripcion', formEdit.value.descripcion);
@@ -113,7 +128,7 @@ const eliminar = async (id) => {
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre y Foto</th>
+          <th>Foto y Nombre</th>
           <th>Precio</th>
           <th>Stock</th>
           <th>Acciones</th>
@@ -143,7 +158,16 @@ const eliminar = async (id) => {
           <template v-else>
             <td>{{ prod.id }}</td>
             <td>
+            <div class="campos-edicion">
               <input v-model="formEdit.nombre" required minlength="3" />
+              <input v-model="formEdit.descripcion" placeholder="Descripción (Opcional)" class="input-edicion" />
+              <select v-model="formEdit.categoria_id" required class="select-edicion">
+                <option value="" disabled>Seleccionar Categoría</option>
+                <option v-for="cat in categorias" :key="cat.id" :value="cat.id">
+                  {{ cat.nombre }}
+                </option>
+              </select>
+            </div>
               <div class="edit-file-box">
                 <small>Cambiar foto:</small>
                 <input type="file" @change="onEditImageChange" accept="image/png, image/jpeg, image/webp" />
@@ -192,5 +216,24 @@ input[type="text"], input[type="number"] { width: 90%; padding: 5px; background:
   border-radius: 6px; /* Bordes ligeramente redondeados */
   border: 1px solid #444; /* Un marquito sutil */
   background-color: #2a2a2a;
+}
+.campos-edicion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Espacio perfecto entre cada input */
+  margin-bottom: 10px;
+}
+.campos-edicion input,
+.campos-edicion select {
+  width: 100%;
+  padding: 8px;
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  box-sizing: border-box; /* Evita que se salgan de la celda */
+}
+.campos-edicion input::placeholder {
+  color: #888;
 }
 </style>
