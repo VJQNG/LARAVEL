@@ -6,6 +6,8 @@ use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductoResource;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\StoreProductoRequest;
+use App\Http\Requests\UpdateProductoRequest;
 
 class ProductoController extends Controller
 {
@@ -32,14 +34,14 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create', Producto::class);
-        $request->validate([
+        /*$request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
             'stock' => 'integer',
             'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
             'categoria_id' => 'required|exists:categorias,id'
-        ]);
+        ]);*/
 
         $data = $request->except('imagen');
 
@@ -68,14 +70,14 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         Gate::authorize('update', $producto);
-        $request->validate([
+        /*$request->validate([
             'nombre' => 'string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'numeric',
             'stock' => 'integer',
             'imagen' => 'nullable|image|mimes:jpg,png,webp|max:2048',
             'categoria_id' => 'required|exists:categorias,id'
-        ]);
+        ]);*/
 
         $data = $request->except('imagen');
 

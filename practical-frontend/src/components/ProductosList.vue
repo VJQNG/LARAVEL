@@ -2,6 +2,9 @@
 import { ref, onMounted } from 'vue';
 import { getProductos, updateProducto, deleteProducto } from '../services/productoService';
 import axios from 'axios';
+import { productoSchema } from '../schemas/productoSchema';
+
+
 
 const productos = ref([]);
 const editando = ref(null);
@@ -73,44 +76,47 @@ const onEditImageChange = (e) => {
     imagenEdit.value = e.target.files[0];
 };
 
-const guardarEdicion = async (id) => {
-    // Requisito 1: Validación de negativos en la edición
-    if (formEdit.value.precio <= 0) {
-        return mostrarMensaje('Error: El precio debe ser mayor a $0.', 'error');
-    }
-    if (formEdit.value.stock < 0) {
-        return mostrarMensaje('Error: El stock no puede ser negativo.', 'error');
-    }
 
+const guardarEdicion = async (id) => {
     try {
-        cargando.value = true; // Encendemos spinner
+        cargando.value = true;
+
+        // --- Validación automática con Yup ---
+        // validate() lanza un error automáticamente si no cumple el schema
+        await productoSchema.validate(formEdit.value, { abortEarly: false });
+
         const fd = new FormData();
         fd.append('nombre', formEdit.value.nombre);
         fd.append('precio', formEdit.value.precio);
         fd.append('stock', formEdit.value.stock);
         fd.append('categoria_id', formEdit.value.categoria_id);
-        
+
         if (formEdit.value.descripcion) {
             fd.append('descripcion', formEdit.value.descripcion);
         }
-
         if (imagenEdit.value) {
             fd.append('imagen', imagenEdit.value);
         }
 
         await updateProducto(id, fd);
-        
-        mostrarMensaje('¡Producto actualizado correctamente!', 'exito');
+
+        mostrarMensaje('¡Producto actualizado!', 'exito');
         editando.value = null;
-        imagenEdit.value = null;
         await cargarProductos();
     } catch (error) {
-        console.error("Error al actualizar", error);
-        mostrarMensaje('Error al intentar actualizar el producto.', 'error');
+        // Si el error es de validación (Yup), mostramos el mensaje del esquema
+        if (error.name === 'ValidationError') {
+            mostrarMensaje(error.errors[0], 'error'); // Muestra el primer error encontrado
+        } else {
+            console.error("Error al actualizar", error);
+            mostrarMensaje('Error al actualizar el producto.', 'error');
+        }
     } finally {
-        cargando.value = false; // Apagamos spinner
+        cargando.value = false;
     }
 };
+
+
 
 // --- Lógica de Eliminación ---
 const eliminar = async (id) => {
