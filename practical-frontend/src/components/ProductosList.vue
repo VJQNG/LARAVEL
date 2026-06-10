@@ -8,6 +8,8 @@ const editando = ref(null);
 const formEdit = ref({ nombre: '', descripcion: '', precio: 0, stock: 0 });
 const imagenEdit = ref(null);
 const categorias = ref([]);
+const metaInfo = ref(null);
+const paginaActual = ref(1);
 
 // Requisitos 2 y 3: Estados para la interfaz
 const mensaje = ref('');
@@ -16,8 +18,10 @@ const cargando = ref(false);
 
 const cargarProductos = async () => {
     try {
-        const res = await getProductos();
-        productos.value = res.data.data; 
+        //const res = await getProductos();
+        const res = await axios.get(`http://localhost:8000/api/productos?page=${paginaActual.value}`);
+        productos.value = res.data.data;
+        metaInfo.value = res.data.meta;
     } catch (error) {
         console.error("Error cargando productos", error);
     }
@@ -29,6 +33,14 @@ const cargarCategorias = async () => {
         categorias.value = res.data.data || res.data;
     } catch (error) {
         console.error("Error cargando categorías", error);
+    }
+};
+
+const cambiarPagina = async (delta) => {
+    const nueva = paginaActual.value + delta;
+    if (metaInfo.value && nueva >= 1 && nueva <= metaInfo.value.last_page) {
+        paginaActual.value = nueva;
+        await cargarProductos();
     }
 };
 
@@ -150,8 +162,8 @@ const eliminar = async (id) => {
             <td>${{ prod.precio }}</td>
             <td>{{ prod.stock }}</td>
             <td>
-              <button class="btn-editar" @click="iniciarEdicion(prod)" :disabled="cargando">Editar</button>
-              <button class="btn-eliminar" @click="eliminar(prod.id)" :disabled="cargando">Eliminar</button>
+              <button class="btn-editar" v-can="'editar'" @click="iniciarEdicion(prod)" :disabled="cargando">Editar</button>
+              <button class="btn-eliminar" v-can="'eliminar'" @click="eliminar(prod.id)" :disabled="cargando">Eliminar</button>
             </td>
           </template>
 
@@ -185,6 +197,11 @@ const eliminar = async (id) => {
         </tr>
       </tbody>
     </table>
+    <div class="paginacion-admin" v-if="metaInfo && metaInfo.last_page > 1">
+      <button @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+      <span>Página {{ paginaActual }} de {{ metaInfo.last_page }}</span>
+      <button @click="cambiarPagina(1)" :disabled="paginaActual === metaInfo.last_page">Siguiente</button>
+    </div>
   </div>
 </template>
 
@@ -235,5 +252,37 @@ input[type="text"], input[type="number"] { width: 90%; padding: 5px; background:
 }
 .campos-edicion input::placeholder {
   color: #888;
+}
+/* Paginación del Inventario */
+.paginacion-admin { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  gap: 15px; 
+  margin-top: 20px; 
+  padding: 15px; 
+  background: #1e1e1e; 
+  border-radius: 5px; 
+}
+.paginacion-admin button { 
+  background: #333; 
+  color: white; 
+  border: none; 
+  padding: 8px 15px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  transition: 0.2s; 
+}
+.paginacion-admin button:not(:disabled):hover { 
+  background: #38bdf8; 
+  color: black; 
+}
+.paginacion-admin button:disabled { 
+  opacity: 0.4; 
+  cursor: not-allowed; 
+}
+.paginacion-admin span { 
+  color: #ccc; 
+  font-weight: bold; 
 }
 </style>

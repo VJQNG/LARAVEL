@@ -5,15 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductoResource;
+use Illuminate\Support\Facades\Gate;
 
 class ProductoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return ProductoResource::collection(Producto::all());
+        // Acoplamos los scopes creados pasándole los parámetros de la petición de Vue
+        $productos = Producto::with('categoria')
+            ->buscar($request->busqueda)
+            ->deCategoria($request->categoria_id)
+            ->rangoPrecio($request->precio_min, $request->precio_max)
+            ->orderBy($request->get('orden', 'nombre'), $request->get('dir', 'asc'))
+            ->paginate($request->get('por_pagina', 15)); // Paginamos a 15 elementos por defecto
+
+        // Retornamos la colección; Laravel inyectará los metadatos automáticamente
+        return ProductoResource::collection($productos);
     }
 
     /**
@@ -21,6 +31,7 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', Producto::class);
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -56,6 +67,7 @@ class ProductoController extends Controller
      */
     public function update(Request $request, Producto $producto)
     {
+        Gate::authorize('update', $producto);
         $request->validate([
             'nombre' => 'string|max:255',
             'descripcion' => 'nullable|string',
@@ -81,6 +93,7 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto)
     {
+        Gate::authorize('delete', $producto);
         $producto->delete();
         
         return response()->json(null, 204);

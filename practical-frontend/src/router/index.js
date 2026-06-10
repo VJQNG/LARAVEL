@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import RegisterView from '../components/RegisterView.vue'
 
 const routes = [
   // Rutas Públicas
@@ -7,7 +8,7 @@ const routes = [
   { path: '/catalogo', component: () => import('../views/CatalogoView.vue') },
   { path: '/catalogo/:id', component: () => import('../views/ProductoDetalle.vue'), props: true },
   { path: '/login', name: 'login', component: () => import('../components/LoginView.vue') },
-  { path: '/registro', name: 'registro', component: () => import('../components/RegisterView.vue') },
+  { path: '/register', name: 'register', component: () => import('../components/RegisterView.vue') },
   { path: '/carrito', component: () => import('../views/CartView.vue') },
 
   // Rutas Privadas Anidadas (Admin)
@@ -35,7 +36,7 @@ const router = createRouter({
 // Guard Global de Navegación (El PAM de Vue)
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  
+
   // Inicializar usuario si hay token guardado (Paso 4.7)
   if (auth.token && !auth.user) {
     // Ejecutaremos la función fetchUser que crearemos después en Pinia

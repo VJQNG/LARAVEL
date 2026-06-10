@@ -6,6 +6,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     token: localStorage.getItem('token') || null, // Recupera la llave si ya existía en el disco
+    permisos: { crear: false, editar: false, eliminar: false }
   }),
   
   // getters: Consultas rápidas al estado
@@ -31,10 +32,12 @@ export const useAuthStore = defineStore('auth', {
 
     async fetchUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/me', {
+        const token = localStorage.getItem('token');
+        const { data } = await axios.get('http://localhost:8000/api/me', {
           headers: { Authorization: `Bearer ${this.token}` }
         })
-        this.user = res.data
+        this.user = data
+        this.permisos = data.permisos;
       } catch (error) {
         // Si el token es inválido o expiró, limpiamos todo
         this.token = null

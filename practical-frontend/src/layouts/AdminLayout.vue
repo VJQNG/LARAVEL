@@ -16,11 +16,13 @@ const logout = async () => {
     <aside class="sidebar">
       <h2>Tienda Arch</h2>
       <p class="user-name">Sesión de: <br><strong>{{ auth.user?.name }}</strong></p>
+      <span style="color: #38bdf8; font-size: 0.85em;">Rol: {{ auth.user?.rol }}</span>
       
       <nav>
+        <router-link to="/catalogo" class="btn-menu">Ver Catálogo</router-link>
         <router-link to="/admin" exact-active-class="activo">Dashboard</router-link>
         <router-link to="/admin/productos" active-class="activo">Inventario</router-link>
-        <router-link to="/admin/nuevo" active-class="activo">Nuevo Producto</router-link>
+        <router-link to="/admin/nuevo" class="btn-menu" v-can="'crear'">Nuevo Producto</router-link>
         <router-link to="/admin/categorias" class="btn-menu">Categorías</router-link>
       </nav>
 

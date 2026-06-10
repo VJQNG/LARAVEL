@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Gate;
 
 class AuthController extends Controller
 {
@@ -61,6 +62,19 @@ class AuthController extends Controller
     // ME: Devuelve la información del usuario autenticado
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+
+        return response()->json([
+            'id'       => $user->id,
+            'name'     => $user->name,
+            'email'    => $user->email,
+            'rol'      => $user->rol, // Exponemos el rol
+            'permisos' => [
+                // Evaluamos el rol directamente, sin intermediarios
+                'crear'    => in_array($user->rol, ['admin', 'editor']),
+                'editar'   => in_array($user->rol, ['admin', 'editor']),
+                'eliminar' => $user->rol === 'admin',
+            ],
+        ]);
     }
 }
