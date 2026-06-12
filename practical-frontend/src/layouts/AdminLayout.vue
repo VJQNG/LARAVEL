@@ -1,6 +1,7 @@
 <script setup>
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import AdminNotificaciones from '../components/AdminNotificaciones.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -12,6 +13,7 @@ const logout = async () => {
 </script>
 
 <template>
+  <AdminNotificaciones />
   <div class="admin-layout">
     <aside class="sidebar">
       <h2>Tienda Arch</h2>

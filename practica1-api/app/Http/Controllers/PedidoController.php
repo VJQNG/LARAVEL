@@ -7,37 +7,47 @@ use App\Models\Pedido;
 use App\Models\Producto;
 use App\Jobs\EnviarConfirmacionPedido;
 use Illuminate\Support\Facades\DB;
+// 1. Importamos las clases de los eventos
+use App\Events\NuevoPedidoRecibido;
+use App\Events\StockBajoAlerta;
 
 class PedidoController extends Controller
 {
     public function store(Request $request)
     {
         $pedido = DB::transaction(function () use ($request) {
-            // 1. Crear la cabecera del pedido
+            
             $p = Pedido::create([
                 'user_id' => auth()->id(),
                 'total' => collect($request->items)
                             ->sum(fn($i) => $i['precio_unitario'] * $i['cantidad']),
             ]);
 
-            // 2. Guardar los detalles y descontar el inventario
             foreach ($request->items as $item) {
                 $p->items()->create($item);
-                Producto::find($item['producto_id'])
-                        ->decrement('stock', $item['cantidad']);
+                
+                // Buscamos el producto y descontamos el stock
+                $producto = Producto::find($item['producto_id']);
+                $producto->decrement('stock', $item['cantidad']);
+                
+                // 2. Disparador 1: Si el stock queda en 5 o menos, lanzamos la alerta
+                if ($producto->stock <= 5) {
+                    broadcast(new StockBajoAlerta($producto, $producto->stock));
+                }
             }
 
             return $p;
         });
 
-        // 3. ¡El Disparador! Mandamos el trabajo al demonio en segundo plano (no bloquea la API)
+        // Este es el Job del correo de la práctica anterior
         EnviarConfirmacionPedido::dispatch($pedido)->delay(now()->addSeconds(5));
 
-        // 4. Respondemos al frontend inmediatamente con un 201 Created
+        // 3. Disparador 2: Avisamos por WebSockets que entró una nueva venta
+        broadcast(new NuevoPedidoRecibido($pedido))->toOthers();
+
         return response()->json(['pedido_id' => $pedido->id], 201);
     }
     
-    // Aquí puedes agregar la función show() después si el manual lo pide para el polling
     public function show($id)
     {
         return response()->json(Pedido::findOrFail($id));
