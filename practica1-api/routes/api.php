@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\PedidoController;
 
 
 // Rutas Públicas (No requieren Token)
@@ -25,4 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Metemos el CRUD de productos dentro de la muralla de seguridad
     Route::apiResource('productos', ProductoController::class);
+    # para el correo
+    Route::post('/pedidos', [PedidoController::class, 'store']);
+    Route::get('/pedidos/{id}', [PedidoController::class, 'show']);
 });
