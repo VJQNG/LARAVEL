@@ -48,6 +48,7 @@ const finalizarCompra = async () => {
 
 <template>
   <div class="cart-view">
+    <router-link to="/catalogo" class="btn-regresar">⬅ Regresar al Catálogo</router-link>
     <h2 style="color: #38bdf8;">Resumen de tu Carrito</h2>
 
     <div v-if="compraFinalizada" class="estado-compra">
@@ -128,4 +129,21 @@ const finalizarCompra = async () => {
 .miniatura-carrito { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #444; background-color: #2a2a2a; display: block; margin: 0 auto; }
 .celda-centrada { text-align: center; vertical-align: middle; }
 .estado-compra { text-align: center; padding: 30px 0; }
+.btn-regresar {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 8px 15px;
+  background: #2a2a2a;
+  color: #ccc;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  border: 1px solid #444;
+  transition: 0.2s;
+}
+.btn-regresar:hover {
+  background: #333;
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
 </style>

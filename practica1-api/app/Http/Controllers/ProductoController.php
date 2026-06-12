@@ -44,6 +44,7 @@ class ProductoController extends Controller
         ]);*/
 
         $data = $request->except('imagen');
+        $data['descripcion'] = $request->descripcion ?? '';
 
         // Si el usuario adjuntó una imagen...
         if ($request->hasFile('imagen')) {
@@ -80,6 +81,7 @@ class ProductoController extends Controller
         ]);*/
 
         $data = $request->except('imagen');
+        $data['descripcion'] = $request->descripcion ?? '';
 
         if ($request->hasFile('imagen')) {
             $data['imagen'] = $request->file('imagen')->store('productos', 'public');

@@ -21,7 +21,10 @@ class Producto extends Model
         return $query->when($termino, function ($q) use ($termino) {
             $q->where(function ($sub) use ($termino) {
                 $sub->where('nombre', 'LIKE', "%{$termino}%")
-                    ->orWhere('descripcion', 'LIKE', "%{$termino}%");
+                    ->orWhere('descripcion', 'LIKE', "%{$termino}%")
+                    ->orWhere('id', 'like', "%{$termino}%")
+                    ->orWhere('precio', 'like', "%{$termino}%")
+                    ->orWhere('stock', 'like', "%{$termino}%");
             });
         });
     }

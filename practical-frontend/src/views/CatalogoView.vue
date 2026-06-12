@@ -109,7 +109,7 @@ watch(() => filtros.busqueda, () => {
     <input
       v-model="filtros.busqueda"
       type="text"
-      placeholder="Buscar por nombre..."
+      placeholder="Buscar por nombre, precio o descripcion..."
       class="buscador"
     />
 

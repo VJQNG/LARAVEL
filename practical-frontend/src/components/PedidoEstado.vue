@@ -44,7 +44,7 @@ onUnmounted(() => {
       ⏳ Procesando tu pedido en segundo plano...
     </div>
     <div v-else class="estado listo">
-      ✅ ¡Pedido confirmado! Revisa tu bandeja de entrada en Mailtrap.
+      ✅ ¡Pedido confirmado! Revisa tu correo.
     </div>
   </div>
 </template>
