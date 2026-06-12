@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Categoria extends Model
 {
+    use HasFactory;
     // 1. Especificamos el nombre exacto de la tabla por buenas prácticas
     protected $table = 'categorias';
 

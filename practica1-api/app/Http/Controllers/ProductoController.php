@@ -31,7 +31,7 @@ class ProductoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductoRequest $request)
     {
         Gate::authorize('create', Producto::class);
         /*$request->validate([
@@ -67,7 +67,7 @@ class ProductoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Producto $producto)
+    public function update(UpdateProductoRequest $request, Producto $producto)
     {
         Gate::authorize('update', $producto);
         /*$request->validate([
