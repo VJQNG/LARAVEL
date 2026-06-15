@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import RegisterView from '../components/RegisterView.vue'
+//import RegisterView from '../components/RegisterView.vue'
 
 const routes = [
   // Rutas Públicas
