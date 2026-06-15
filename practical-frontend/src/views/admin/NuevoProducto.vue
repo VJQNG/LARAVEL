@@ -1,42 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-// Importaciones del nuevo motor de validación
 import { useForm, useField } from 'vee-validate'
 import { productoSchema } from '../../schemas/productoSchema'
 import InputField from '../../components/InputField.vue'
 
+// Importamos desde los servicios con la ruta correcta (dos niveles arriba)
+import { createProducto } from '../../services/productoService'
+import { getCategorias } from '../../services/categoriaService'
+
 const router = useRouter()
 const categorias = ref([])
-const imagen = ref(null)      
-const preview = ref(null)     
+const imagen = ref(null)
+const preview = ref(null)
 const mensaje = ref('')
 const tipoMensaje = ref('exito')
 const cargando = ref(false)
 
-// 1. Inicializamos VeeValidate pasándole tu archivo de reglas (Schema)
 const { handleSubmit, errors, resetForm } = useForm({
   validationSchema: productoSchema
 })
 
-// 2. Extraemos los campos. Vue/VeeValidate los mantendrá sincronizados automáticamente.
 const { value: nombre } = useField('nombre')
 const { value: descripcion } = useField('descripcion')
 const { value: precio } = useField('precio')
 const { value: stock } = useField('stock')
 const { value: categoria_id } = useField('categoria_id')
 
-// 3. Este objeto atrapará los errores 422 si alguien intenta burlar al frontend
 const erroresServidor = ref({})
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('token')
-    const { data } = await axios.get('http://localhost:8000/api/categorias', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    categorias.value = data.data || data
+    // Usamos el servicio centralizado (que ya trae la v1 y el token)
+    const res = await getCategorias()
+    categorias.value = res.data.data || res.data
   } catch (error) {
     console.error("Error al cargar categorías", error)
   }
@@ -46,41 +43,34 @@ const onImageChange = (e) => {
   const file = e.target.files[0]
   if (!file) return
   imagen.value = file
-  preview.value = URL.createObjectURL(file) 
+  preview.value = URL.createObjectURL(file)
 }
 
-// 4. handleSubmit verifica automáticamente que no haya errores de Yup antes de ejecutar esto
 const onSubmit = handleSubmit(async (values) => {
   try {
-    cargando.value = true 
-    erroresServidor.value = {} // Limpiamos errores previos
-    
+    cargando.value = true
+    erroresServidor.value = {}
+
     const fd = new FormData()
     fd.append('nombre', values.nombre)
     if (values.descripcion) fd.append('descripcion', values.descripcion)
     fd.append('precio', values.precio ? values.precio : 0)
     fd.append('stock', values.stock ? values.stock : 0)
     fd.append('categoria_id', values.categoria_id)
-    
+
     if (imagen.value) {
       fd.append('imagen', imagen.value)
     }
 
-    const token = localStorage.getItem('token')
-    await axios.post('http://localhost:8000/api/productos', fd, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-    
+    // Usamos la función del servicio para crear el producto
+    await createProducto(fd)
+
     mensaje.value = 'Producto guardado exitosamente.'
     tipoMensaje.value = 'exito'
     setTimeout(() => router.push('/admin/productos'), 1500)
-    
+
   } catch (error) {
     console.error("Error al guardar", error)
-    // Si Laravel detecta algo raro y devuelve 422, atrapamos los mensajes
     if (error.response?.status === 422) {
       erroresServidor.value = error.response.data.errors
       mensaje.value = 'Corrige los errores del formulario.'
@@ -89,7 +79,7 @@ const onSubmit = handleSubmit(async (values) => {
     }
     tipoMensaje.value = 'error'
   } finally {
-    cargando.value = false 
+    cargando.value = false
   }
 })
 </script>

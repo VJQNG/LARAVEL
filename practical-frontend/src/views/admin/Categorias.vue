@@ -1,6 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+
+// 1. IMPORTAMOS nuestras funciones del servicio (ruta relativa hacia arriba)
+import {
+  getCategorias,
+  createCategoria,
+  updateCategoria,
+  deleteCategoria
+} from '../../services/categoriaService'
 
 const categorias = ref([])
 const formNueva = ref({ nombre: '', descripcion: '' })
@@ -17,7 +24,8 @@ const mostrarMensaje = (texto, tipo = 'exito') => {
 
 const cargarCategorias = async () => {
   try {
-    const res = await axios.get('http://localhost:8000/api/categorias')
+    // 2. USAMOS EL SERVICIO para obtener (GET)
+    const res = await getCategorias()
     categorias.value = res.data.data || res.data
   } catch (error) {
     console.error("Error cargando categorías:", error)
@@ -29,7 +37,8 @@ onMounted(cargarCategorias)
 // --- CREAR ---
 const guardarCategoria = async () => {
   try {
-    await axios.post('http://localhost:8000/api/categorias', formNueva.value)
+    // 3. USAMOS EL SERVICIO para crear (POST)
+    await createCategoria(formNueva.value)
     mostrarMensaje('¡Categoría creada exitosamente!')
     formNueva.value.nombre = ''
     formNueva.value.descripcion = ''
@@ -52,7 +61,8 @@ const cancelarEdicion = () => {
 
 const guardarEdicion = async (id) => {
   try {
-    await axios.put(`http://localhost:8000/api/categorias/${id}`, formEdit.value)
+    // 4. USAMOS EL SERVICIO para actualizar (PUT)
+    await updateCategoria(id, formEdit.value)
     mostrarMensaje('¡Categoría actualizada correctamente!')
     editando.value = null
     await cargarCategorias()
@@ -66,11 +76,12 @@ const guardarEdicion = async (id) => {
 const eliminar = async (id) => {
   if (confirm('¿Seguro que deseas eliminar esta categoría permanentemente?')) {
     try {
-      await axios.delete(`http://localhost:8000/api/categorias/${id}`)
+      // 5. USAMOS EL SERVICIO para eliminar (DELETE)
+      await deleteCategoria(id)
       mostrarMensaje('Categoría eliminada del sistema.')
       await cargarCategorias()
     } catch (error) {
-      // Si el servidor responde con error, extraemos el mensaje del backend
+      // El manejo del error 409 (Conflicto de BD) sigue funcionando idéntico
       if (error.response && error.response.status === 409) {
         mostrarMensaje(error.response.data.message, 'error')
       } else {

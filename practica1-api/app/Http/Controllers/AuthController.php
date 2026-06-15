@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
+use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
@@ -29,7 +30,23 @@ class AuthController extends Controller
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
 
-    // LOGIN: Verifica credenciales y devuelve una nueva llave
+    #[OA\Post(
+        path: "/api/v1/login",
+        summary: "Iniciar sesión de usuario",
+        tags: ["Autenticación"]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["email", "password"],
+            properties: [
+                new OA\Property(property: "email", type: "string", example: "nanche@nanche.com"),
+                new OA\Property(property: "password", type: "string", example: "nanche")
+            ]
+        )
+    )]
+    #[OA\Response(response: 200, description: "Login correcto, devuelve el token")]
+    #[OA\Response(response: 401, description: "Credenciales incorrectas")]
     public function login(Request $request)
     {
         $request->validate([

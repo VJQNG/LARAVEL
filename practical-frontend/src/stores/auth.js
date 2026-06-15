@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import axios from '../plugins/axios'
 
 export const useAuthStore = defineStore('auth', {
   // state: Nuestra memoria RAM
@@ -17,14 +17,14 @@ export const useAuthStore = defineStore('auth', {
   // actions: Los comandos para alterar la memoria
   actions: {
     async login(credentials) {
-      const res = await axios.post('http://localhost:8000/api/login', credentials)
+      const res = await axios.post('/login', credentials)
       this.token = res.data.token
       this.user = res.data.user
       localStorage.setItem('token', this.token) // Guardamos la llave en disco
     },
     
     async register(data) {
-      const res = await axios.post('http://localhost:8000/api/register', data)
+      const res = await axios.post('/register', data)
       this.token = res.data.token
       this.user = res.data.user
       localStorage.setItem('token', this.token)
@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       try {
         const token = localStorage.getItem('token');
-        const { data } = await axios.get('http://localhost:8000/api/me', {
+        const { data } = await axios.get('/me', {
           headers: { Authorization: `Bearer ${this.token}` }
         })
         this.user = data

@@ -1,8 +1,10 @@
 import axios from 'axios'
 import router from '../router' // Importaremos el router en el siguiente paso
 
+const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1'
+
 // Configuración global
-axios.defaults.baseURL = 'http://localhost:8000/api'
+axios.defaults.baseURL = `http://localhost:8000/api/${API_VERSION}`
 axios.defaults.headers.common['Accept'] = 'application/json' // Forzamos a que Laravel no nos redirija como humanos
 
 // Interceptor de PETICIÓN (Antes de salir al servidor)

@@ -3,8 +3,11 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCarritoStore } from '../stores/carrito'
 import CartIcon from '../components/CartIcon.vue'
-import axios from 'axios'
 import { useFiltros } from '../composables/useFiltros'
+
+// 1. Importamos las funciones limpias desde nuestros servicios
+import { getProductos } from '../services/productoService'
+import { getCategorias } from '../services/categoriaService'
 
 const carrito = useCarritoStore()
 const route = useRoute()
@@ -14,38 +17,29 @@ const categorias = ref([])
 const resultado = ref({ data: [], meta: {} })
 const cargando = ref(false)
 
-// 1. Descargamos las categorías leyendo el token dinámicamente
+// 2. Descargamos las categorías usando el servicio (ya trae el token y la URL)
 const cargarCategorias = async () => {
   try {
-    const token = localStorage.getItem('token')
-    if (!token) return
-    const res = await axios.get('http://localhost:8000/api/categorias', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const res = await getCategorias()
     categorias.value = res.data.data || res.data
   } catch (error) {
     console.error("Error al cargar categorías", error)
   }
 }
 
-// 2. Descargamos los productos filtrados
+// 3. Descargamos los productos filtrados usando el servicio
 const cargarProductos = async () => {
   cargando.value = true
   try {
-    const token = localStorage.getItem('token')
-    if (!token) return
-    // Filtro absoluto purificado
     const parametros = { page: filtros.pagina }
     if (filtros.busqueda) parametros.busqueda = filtros.busqueda
     if (filtros.categoria_id) parametros.categoria_id = filtros.categoria_id
     if (filtros.precio_min) parametros.precio_min = filtros.precio_min
     if (filtros.precio_max) parametros.precio_max = filtros.precio_max
 
-    const { data } = await axios.get('http://localhost:8000/api/productos', {
-      headers: { Authorization: `Bearer ${token}` },
-      params: parametros
-    })
-    resultado.value = data
+    // El servicio se encarga de la URL base y el token Sanctum automáticamente
+    const res = await getProductos(parametros)
+    resultado.value = res.data
   } catch (error) {
     console.error("Error al filtrar en el backend", error)
   } finally {

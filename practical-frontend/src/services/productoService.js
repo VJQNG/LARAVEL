@@ -7,7 +7,7 @@
 import api from '../plugins/axios'
 
 // 2. Exportamos las funciones del CRUD
-export const getProductos = () => api.get('/productos');
+export const getProductos = (params) => api.get('/productos', { params });
 
 export const createProducto = (data) => {
     return api.post('/productos', data);

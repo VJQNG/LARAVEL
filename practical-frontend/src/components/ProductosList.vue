@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { updateProducto, deleteProducto } from '../services/productoService';
-import axios from 'axios';
+import { getProductos, updateProducto, deleteProducto } from '../services/productoService';
+import { getCategorias } from '../services/categoriaService';
+// import api from '../plugins/axios';
 import { productoSchema } from '../schemas/productoSchema';
 
 const productos = ref([]);
@@ -20,11 +21,12 @@ const mensaje = ref('');
 const tipoMensaje = ref('exito');
 const cargando = ref(false);
 
+/*
 // Función modificada para enviar filtros por URL (como el catálogo)
 const cargarProductos = async (page = paginaActual.value) => {
     paginaActual.value = page;
     try {
-        const res = await axios.get(`http://localhost:8000/api/productos`, {
+        const res = await api.get(`/productos`, {
             params: {
                 page: paginaActual.value,
                 busqueda: busqueda.value,
@@ -37,15 +39,47 @@ const cargarProductos = async (page = paginaActual.value) => {
         console.error("Error cargando productos", error);
     }
 };
+*/
 
+
+const cargarProductos = async (page = paginaActual.value) => {
+    paginaActual.value = page;
+    try {
+        // En lugar de axios.get, usamos nuestra función del servicio
+        const res = await getProductos({
+            page: paginaActual.value,
+            busqueda: busqueda.value,
+            categoria_id: categoriaSeleccionada.value || null
+        });
+        productos.value = res.data.data;
+        metaInfo.value = res.data.meta;
+    } catch (error) {
+        console.error("Error cargando productos", error);
+    }
+};
+
+
+/*
 const cargarCategorias = async () => {
     try {
-        const res = await axios.get('http://localhost:8000/api/categorias');
+        const res = await axios.get('/categorias');
         categorias.value = res.data.data || res.data;
     } catch (error) {
         console.error("Error cargando categorías", error);
     }
 };
+*/
+
+const cargarCategorias = async () => {
+    try {
+        // En lugar de axios.get, usamos el servicio
+        const res = await getCategorias();
+        categorias.value = res.data.data || res.data;
+    } catch (error) {
+        console.error("Error cargando categorías", error);
+    }
+};
+
 
 const cambiarPagina = async (delta) => {
     const nueva = paginaActual.value + delta;
@@ -91,7 +125,6 @@ const guardarEdicion = async (id) => {
 
         const fd = new FormData();
         fd.append('nombre', formEdit.value.nombre);
-        // PARCHE ARCH: Forzamos envío de string vacío si es null, evitando error de BD
         fd.append('descripcion', formEdit.value.descripcion || '');
         fd.append('precio', formEdit.value.precio);
         fd.append('stock', formEdit.value.stock);

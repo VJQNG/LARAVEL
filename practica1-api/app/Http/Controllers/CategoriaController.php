@@ -6,12 +6,19 @@ use App\Models\Categoria;
 use App\Http\Resources\CategoriaResource;
 use App\Http\Resources\ProductoResource;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class CategoriaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    #[OA\Get(
+        path: "/api/v1/categorias",
+        summary: "Obtener lista de categorías",
+        tags: ["Categorías"]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Devuelve la lista de categorías disponibles"
+    )]
     public function index()
     {
         return CategoriaResource::collection(
