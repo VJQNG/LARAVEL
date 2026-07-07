@@ -6,6 +6,13 @@ services:
     container_name: laravel_app
     restart: unless-stopped
     working_dir: /var/www
+    env_file:
+      - .env.docker
+    secrets:
+      - db_password
+      - app_key
+    environment:
+      DB_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - .:/var/www
     networks:
@@ -52,3 +59,9 @@ volumes:
 networks:
   laravel_net:
     driver: bridge
+
+secrets:
+  db_password:
+    file: ./docker/secrets/db_password.txt
+  app_key:
+    file: ./docker/secrets/app_key.txt
