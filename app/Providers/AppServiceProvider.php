@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Fortify;
-use Illuminate\Support\Facades\RateLimiter; // <-- Para el límite de intentos
-use Illuminate\Cache\RateLimiting\Limit;      // <-- Para definir el límite
-use Illuminate\Http\Request;                  // <-- Para identificar la IP
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,9 +35,26 @@ class AppServiceProvider extends ServiceProvider
             });
         }
 
-        // Regla de seguridad de Fortify para evitar fuerza bruta en el Login
+
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(5)->by(
+                $request->input('email') . '|' . $request->ip()
+            )->response(function () {
+                return response()->json([
+                    'mensaje' => 'Demasiados intentos. Espera 1 minuto.',
+                    'retry_after' => 60
+                ], 429);
+            });
+        });
+
+        RateLimiter::for('api', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(60)->by($request->user()->id)
+                : Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('sensible', function (Request $request) {
+            return Limit::perHour(3)->by($request->ip());
         });
 
         RateLimiter::for('two-factor', function (Request $request) {
