@@ -127,6 +127,30 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'security' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/security/security.log'),
+            'level'  => 'info',
+            'days'   => 90,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+        ],
+
+        'audit' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/audit/audit.log'),
+            'level'  => 'info',
+            'days'   => 365, // retención de 1 año [cite: 135]
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+        ],
+
+        'critical' => [
+            'driver'   => 'slack',
+            'url'      => env('SLACK_WEBHOOK_URL'),
+            'username' => 'Laravel Security Bot',
+            'emoji'    => ':warning:',
+            'level'    => 'critical',
+        ],
+
     ],
 
 ];
